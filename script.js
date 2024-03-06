@@ -57,7 +57,8 @@ function initEventListeners(canvas, ctx, game, messageField, showHintsToggle) {
     });
     showHintsToggle.addEventListener('change', (_) => {
         showingHints = showHintsToggle.checked;
-        drawHintsIfNeeded(game, ctx);
+        // drawHintsIfNeeded(game, ctx);
+        drawBoard(canvas, ctx, game);
     });
 }
 function drawBoardGrid(canvas, ctx) {
