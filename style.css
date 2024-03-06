@@ -1,0 +1,14 @@
+html {
+    font-family: sans-serif;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.left {
+    justify-content: left;
+    align-items: start;
+}
