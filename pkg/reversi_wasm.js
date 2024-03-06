@@ -198,10 +198,10 @@ function getArrayJsValueFromWasm0(ptr, len) {
 }
 /**
 */
-export const Color = Object.freeze({ Black:0,"0":"Black",White:1,"1":"White",Empty:2,"2":"Empty", });
+export const GameStatus = Object.freeze({ Ok:0,"0":"Ok",InvalidMove:1,"1":"InvalidMove",BlackWin:2,"2":"BlackWin",WhiteWin:3,"3":"WhiteWin",Draw:4,"4":"Draw", });
 /**
 */
-export const GameStatus = Object.freeze({ Ok:0,"0":"Ok",InvalidMove:1,"1":"InvalidMove",BlackWin:2,"2":"BlackWin",WhiteWin:3,"3":"WhiteWin",Draw:4,"4":"Draw", });
+export const Color = Object.freeze({ Black:0,"0":"Black",White:1,"1":"White",Empty:2,"2":"Empty", });
 
 const GameFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }

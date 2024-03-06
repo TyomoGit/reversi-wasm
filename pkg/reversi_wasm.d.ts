@@ -2,19 +2,19 @@
 /* eslint-disable */
 /**
 */
-export enum Color {
-  Black = 0,
-  White = 1,
-  Empty = 2,
-}
-/**
-*/
 export enum GameStatus {
   Ok = 0,
   InvalidMove = 1,
   BlackWin = 2,
   WhiteWin = 3,
   Draw = 4,
+}
+/**
+*/
+export enum Color {
+  Black = 0,
+  White = 1,
+  Empty = 2,
 }
 /**
 */

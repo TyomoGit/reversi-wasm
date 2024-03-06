@@ -1,4 +1,3 @@
-import { doc } from "../../../../node_modules/prettier/index.js";
 import init, * as wasm  from "./pkg/reversi_wasm.js";
 
 const BOARD_SIZE = 8;
