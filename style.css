@@ -2,7 +2,7 @@ html {
     font-family: sans-serif;
 }
 
-.container {
+.container, small {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -11,4 +11,8 @@ html {
 .left {
     justify-content: left;
     align-items: start;
+}
+
+small {
+    padding: 5rem;
 }
