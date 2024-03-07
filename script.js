@@ -26,7 +26,7 @@ function entry() {
 function reset() {
     const isHuman = enemySelect.value == "human";
     console.log(isHuman);
-    game = new wasm.Game(isHuman);
+    game = new wasm.Game(isHuman, wasm.str_to_computer_strength(enemySelect.value));
     turn = game.get_turn();
     showingHints = showHintsToggle.checked;
 }

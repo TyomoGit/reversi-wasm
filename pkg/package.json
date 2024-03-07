@@ -3,7 +3,7 @@
   "collaborators": [
     "TyomoGit <riku3dno.1@gmail.com>"
   ],
-  "version": "0.2.0",
+  "version": "0.3.0",
   "files": [
     "reversi_wasm_bg.wasm",
     "reversi_wasm.js",

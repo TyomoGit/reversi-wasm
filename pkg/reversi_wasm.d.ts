@@ -6,12 +6,10 @@
 */
 export function color_to_string(color: Color): string;
 /**
+* @param {string} s
+* @returns {ComputerStrength}
 */
-export enum Color {
-  Black = 0,
-  White = 1,
-  Empty = 2,
-}
+export function str_to_computer_strength(s: string): ComputerStrength;
 /**
 */
 export enum GameStatus {
@@ -25,12 +23,27 @@ export enum GameStatus {
 }
 /**
 */
+export enum ComputerStrength {
+  Random = 0,
+  Simple = 1,
+  Weighted = 2,
+}
+/**
+*/
+export enum Color {
+  Black = 0,
+  White = 1,
+  Empty = 2,
+}
+/**
+*/
 export class Game {
   free(): void;
 /**
 * @param {boolean} is_human
+* @param {ComputerStrength} computer_strength
 */
-  constructor(is_human: boolean);
+  constructor(is_human: boolean, computer_strength: ComputerStrength);
 /**
 * @param {number} x
 * @param {number} y
@@ -80,12 +93,13 @@ export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_game_free: (a: number) => void;
   readonly color_to_string: (a: number, b: number) => void;
+  readonly str_to_computer_strength: (a: number, b: number) => number;
   readonly __wbg_point_free: (a: number) => void;
   readonly __wbg_get_point_0: (a: number) => number;
   readonly __wbg_set_point_0: (a: number, b: number) => void;
   readonly __wbg_get_point_1: (a: number) => number;
   readonly __wbg_set_point_1: (a: number, b: number) => void;
-  readonly game_new: (a: number) => number;
+  readonly game_new: (a: number, b: number) => number;
   readonly game_put: (a: number, b: number, c: number) => number;
   readonly game_get_board: (a: number) => number;
   readonly game_can_put_stone: (a: number, b: number, c: number) => number;
@@ -96,6 +110,7 @@ export interface InitOutput {
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_exn_store: (a: number) => void;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;

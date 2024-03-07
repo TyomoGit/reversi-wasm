@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use reversi::board::ReversiBoard;
-use reversi::computer::{SimpleComputer, WeightedComputer};
+use reversi::computer::{Computer, RandomComputer, SimpleComputer, WeightedComputer};
 use reversi::{
     board::ReversiError, computer::PlayerType, game::SimpleReversiGame, stone::Stone
 };
@@ -71,6 +71,23 @@ pub enum GameStatus {
 }
 
 #[wasm_bindgen]
+pub enum ComputerStrength {
+    Random,
+    Simple,
+    Weighted,
+}
+
+#[wasm_bindgen]
+pub fn str_to_computer_strength(s: &str) -> ComputerStrength {
+    match s {
+        "random" => ComputerStrength::Random,
+        "simple" => ComputerStrength::Simple,
+        "weighted" => ComputerStrength::Weighted,
+        _ => ComputerStrength::Weighted
+    }
+}
+
+#[wasm_bindgen]
 pub struct Point(pub usize, pub usize);
 
 impl Serialize for Point {
@@ -88,13 +105,17 @@ impl Serialize for Point {
 #[wasm_bindgen]
 impl Game {
     #[wasm_bindgen(constructor)]
-    pub fn new(is_human: bool) -> Game {
+    pub fn new(is_human: bool, computer_strength: ComputerStrength) -> Game {
+        let computer: Box<dyn Computer> = match computer_strength {
+            ComputerStrength::Random => Box::new(RandomComputer::new(Stone::White)),
+            ComputerStrength::Simple => Box::new(SimpleComputer::new(Stone::White)),
+            ComputerStrength::Weighted => Box::new(WeightedComputer::new(Stone::White)),
+        };
+
         let white = if is_human {
             PlayerType::Human
         } else {
-            PlayerType::Computer(
-                Box::new(WeightedComputer::new(Stone::White))
-            )
+            PlayerType::Computer(computer)
         };
 
         Game {
@@ -176,6 +197,6 @@ impl Game {
 
 impl Default for Game {
     fn default() -> Self {
-        Self::new(true)
+        Self::new(true, ComputerStrength::Weighted)
     }
 }
