@@ -9,6 +9,13 @@
 <body>
     <h1>Reversi</h1>
     <input type="checkbox" id="showHintsToggle" checked>show hints</input>
+    <div>
+        <label for="enemySelect">enemy</label>
+        <select id="enemySelect">
+            <option value="human">human</option>
+            <option value="computer" selected>computer</option>
+        </select>
+    </div>
     <p id="messageField"></p>
     <div class="container">
         <canvas id="canvas"></canvas>

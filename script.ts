@@ -6,37 +6,49 @@ const GRID_SIZE = 40;
 const PADDING_SCALE = 1/2;
 const OFFSET = GRID_SIZE * PADDING_SCALE;
 
+const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+const messageField = document.getElementById("messageField") as HTMLParagraphElement;
+const showHintsToggle = document.getElementById("showHintsToggle") as HTMLInputElement;
+const enemySelect = document.getElementById("enemySelect") as HTMLSelectElement;
+
 // begin global variables
-let turn: wasm.Color = wasm.Color.Black;
-let showingHints = false;
+let turn: wasm.Color;
+let showingHints: boolean;
+let game: wasm.Game;
 // end global variables
 
 init()
-    .then(main);
+    .then(entry);
 
-function main() {
-    const game = new wasm.Game();
-    const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-    const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-    const messageField = document.getElementById("messageField") as HTMLParagraphElement;
-    const showHintsToggle = document.getElementById("showHintsToggle") as HTMLInputElement;
-    showingHints = showHintsToggle.checked;
+function entry() {
+    reset();
 
     canvas.width = GRID_SIZE * (BOARD_SIZE + 1);
     canvas.height = GRID_SIZE * (BOARD_SIZE + 1);
 
-    initEventListeners(canvas, ctx, game, messageField, showHintsToggle);
+    initEventListeners(canvas, ctx, messageField, showHintsToggle, enemySelect);
 
     updateTurnMessage(messageField);
     drawBoard(canvas, ctx, game);
 }
 
+function reset() {
+    const isHuman = enemySelect.value == "human";
+    console.log(isHuman);
+    
+
+    game = new wasm.Game(isHuman);
+    turn = game.get_turn();
+    showingHints = showHintsToggle.checked;
+}
+
 function initEventListeners(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
-    game: wasm.Game,
     messageField: HTMLParagraphElement,
-    showHintsToggle: HTMLInputElement
+    showHintsToggle: HTMLInputElement,
+    enemySelect: HTMLSelectElement
 ) {
     canvas.addEventListener('mousemove', (event) => {
         const { x, y } = cursorCoord(event, canvas);
@@ -55,6 +67,9 @@ function initEventListeners(
         switch (status) {
             case wasm.GameStatus.Ok:
                 break;
+            case wasm.GameStatus.OkAndComputerPlaced:
+                takeTurn(messageField, ctx);
+                break;
             case wasm.GameStatus.BlackWin:
                 messageField.innerHTML = "🎉🖤Black win!🎉";
                 drawBoard(canvas, ctx, game);
@@ -70,8 +85,8 @@ function initEventListeners(
             case wasm.GameStatus.InvalidMove:
                 return;
             case wasm.GameStatus.NextPlayerCantPutStone:
-                takeTurn(messageField, game, ctx);
                 alert(`[${wasm.color_to_string(turn)}] There is no stone to put. Pass.`);
+                takeTurn(messageField, ctx);
                 break;
             default:
                 // unreachable
@@ -80,7 +95,7 @@ function initEventListeners(
 
         drawBoard(canvas, ctx, game);
 
-        takeTurn(messageField, game, ctx);
+        takeTurn(messageField, ctx);
     });
 
     showHintsToggle.addEventListener('change', (_) => {
@@ -88,6 +103,13 @@ function initEventListeners(
 
         // drawHintsIfNeeded(game, ctx);
         drawBoard(canvas, ctx, game);
+    });
+
+    enemySelect.addEventListener('change', (_) => {
+        reset();
+        drawBoard(canvas, ctx, game);
+        console.log(`enemy: ${enemySelect.value}`);
+        
     });
 }
 
@@ -122,7 +144,7 @@ function drawBoard(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, gam
         })
     });
 
-    drawHintsIfNeeded(game, ctx);
+    drawHintsIfNeeded(ctx);
 }
 
 function drawStone(
@@ -163,16 +185,12 @@ function cursorCoord(event: MouseEvent, canvas: HTMLCanvasElement): {x: number, 
     };
 }
 
-function takeTurn(messageField: HTMLParagraphElement, game: wasm.Game, ctx: CanvasRenderingContext2D) {
-    if (turn == wasm.Color.Black) {
-        turn = wasm.Color.White;
-    } else {
-        turn = wasm.Color.Black;
-    }
+function takeTurn(messageField: HTMLParagraphElement, ctx: CanvasRenderingContext2D) {
+    turn = game.get_turn();
 
     updateTurnMessage(messageField);
 
-    drawHintsIfNeeded(game, ctx);
+    drawHintsIfNeeded(ctx);
 }
 
 function updateTurnMessage(messageField: HTMLParagraphElement) {
@@ -181,7 +199,7 @@ function updateTurnMessage(messageField: HTMLParagraphElement) {
         : "🤍White's turn";
 }
 
-function drawHintsIfNeeded(game: wasm.Game, ctx: CanvasRenderingContext2D) {
+function drawHintsIfNeeded(ctx: CanvasRenderingContext2D) {
     if (showingHints) {
         game.get_can_put_stones().forEach((point: wasm.Point) => {
             ctx.fillStyle = "skyblue";

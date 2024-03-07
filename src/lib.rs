@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
+use reversi::computer::{SimpleComputer, WeightedComputer};
 use reversi::{
-    game::{ReversiGameError, SimpleReversiGame},
-    player::PlayerKind,
+    board::ReversiError, computer::PlayerType, game::SimpleReversiGame, stone::Stone
 };
 use serde::Serialize;
 use serde::ser::SerializeTuple;
@@ -60,6 +60,7 @@ impl serde::Serialize for Color {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GameStatus {
     Ok,
+    OkAndComputerPlaced,
     InvalidMove,
     BlackWin,
     WhiteWin,
@@ -85,25 +86,40 @@ impl Serialize for Point {
 #[wasm_bindgen]
 impl Game {
     #[wasm_bindgen(constructor)]
-    pub fn new() -> Game {
+    pub fn new(is_human: bool) -> Game {
+        let white = if is_human {
+            PlayerType::Human
+        } else {
+            PlayerType::Computer(
+                Box::new(WeightedComputer::new(Stone::White))
+            )
+        };
+
         Game {
-            game: SimpleReversiGame::new(),
+            game: SimpleReversiGame::new(PlayerType::Human, white),
         }
     }
+
     pub fn put(&mut self, x: usize, y: usize) -> GameStatus {
         match self.game.put_stone(x, y) {
-            Ok(()) => GameStatus::Ok,
+            Ok(()) => {
+                if let PlayerType::Computer(_) = self.game.white() {
+                    GameStatus::OkAndComputerPlaced
+                } else {
+                    GameStatus::Ok
+                }
+            },
             Err(err) => match err {
-                ReversiGameError::StoneAlreadyPlaced
-                | ReversiGameError::InvalidMove
-                | ReversiGameError::IndexOutOfBound
-                | ReversiGameError::NoStoneToFlip => GameStatus::InvalidMove,
-                ReversiGameError::GameOverWithWinner(winner) => match winner {
-                    PlayerKind::Black => GameStatus::BlackWin,
-                    PlayerKind::White => GameStatus::WhiteWin,
+                ReversiError::StoneAlreadyPlaced
+                | ReversiError::InvalidMove
+                | ReversiError::IndexOutOfBound
+                | ReversiError::NoStoneToFlip => GameStatus::InvalidMove,
+                ReversiError::GameOverWithWinner(winner) => match winner {
+                    Stone::Black => GameStatus::BlackWin,
+                    Stone::White => GameStatus::WhiteWin,
                 },
-                ReversiGameError::GameOverWithDraw => GameStatus::Draw,
-                ReversiGameError::NextPlayerCantPutStone => GameStatus::NextPlayerCantPutStone,
+                ReversiError::GameOverWithDraw => GameStatus::Draw,
+                ReversiError::NextPlayerCantPutStone => GameStatus::NextPlayerCantPutStone,
             },
         }
     }
@@ -119,8 +135,8 @@ impl Game {
             .map(|rows| {
                 rows.iter()
                     .map(|cell| match cell {
-                        Some(PlayerKind::Black) => Color::Black,
-                        Some(PlayerKind::White) => Color::White,
+                        Some(Stone::Black) => Color::Black,
+                        Some(Stone::White) => Color::White,
                         None => Color::Empty,
                     })
                     .collect()
@@ -147,10 +163,17 @@ impl Game {
             .board()
             .is_game_over()
     }
+
+    pub fn get_turn(&self) -> Color {
+        match self.game.turn() {
+            Stone::Black => Color::Black,
+            Stone::White => Color::White,
+        }
+    }
 }
 
 impl Default for Game {
     fn default() -> Self {
-        Self::new()
+        Self::new(true)
     }
 }

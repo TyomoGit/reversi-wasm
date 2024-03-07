@@ -218,10 +218,10 @@ function getArrayJsValueFromWasm0(ptr, len) {
 }
 /**
 */
-export const GameStatus = Object.freeze({ Ok:0,"0":"Ok",InvalidMove:1,"1":"InvalidMove",BlackWin:2,"2":"BlackWin",WhiteWin:3,"3":"WhiteWin",Draw:4,"4":"Draw",NextPlayerCantPutStone:5,"5":"NextPlayerCantPutStone", });
+export const Color = Object.freeze({ Black:0,"0":"Black",White:1,"1":"White",Empty:2,"2":"Empty", });
 /**
 */
-export const Color = Object.freeze({ Black:0,"0":"Black",White:1,"1":"White",Empty:2,"2":"Empty", });
+export const GameStatus = Object.freeze({ Ok:0,"0":"Ok",OkAndComputerPlaced:1,"1":"OkAndComputerPlaced",InvalidMove:2,"2":"InvalidMove",BlackWin:3,"3":"BlackWin",WhiteWin:4,"4":"WhiteWin",Draw:5,"5":"Draw",NextPlayerCantPutStone:6,"6":"NextPlayerCantPutStone", });
 
 const GameFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
@@ -242,9 +242,10 @@ export class Game {
         wasm.__wbg_game_free(ptr);
     }
     /**
+    * @param {boolean} is_human
     */
-    constructor() {
-        const ret = wasm.game_new();
+    constructor(is_human) {
+        const ret = wasm.game_new(is_human);
         this.__wbg_ptr = ret >>> 0;
         return this;
     }
@@ -297,6 +298,13 @@ export class Game {
     is_game_over() {
         const ret = wasm.game_is_game_over(this.__wbg_ptr);
         return ret !== 0;
+    }
+    /**
+    * @returns {Color}
+    */
+    get_turn() {
+        const ret = wasm.game_get_turn(this.__wbg_ptr);
+        return ret;
     }
 }
 
@@ -388,12 +396,12 @@ async function __wbg_load(module, imports) {
 function __wbg_get_imports() {
     const imports = {};
     imports.wbg = {};
-    imports.wbg.__wbindgen_number_new = function(arg0) {
-        const ret = arg0;
-        return addHeapObject(ret);
-    };
     imports.wbg.__wbg_point_new = function(arg0) {
         const ret = Point.__wrap(arg0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_number_new = function(arg0) {
+        const ret = arg0;
         return addHeapObject(ret);
     };
     imports.wbg.__wbindgen_object_drop_ref = function(arg0) {

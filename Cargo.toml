@@ -1,6 +1,6 @@
 [package]
 name = "reversi-wasm"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["TyomoGit <riku3dno.1@gmail.com>"]
 edition = "2021"
 
@@ -18,9 +18,10 @@ wasm-bindgen = { version = "0.2.84" }
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
 # code size when deploying.
 console_error_panic_hook = { version = "0.1.7", optional = true }
-reversi = { git = "https://github.com/TyomoGit/reversi.git", version = "0.4.0" }
+reversi = { git = "https://github.com/TyomoGit/reversi.git", version = "0.7.0" }
 serde-wasm-bindgen = "0.6.5"
 serde = "1.0.197"
+getrandom = { version = "0.2.12", features = ["js"] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"

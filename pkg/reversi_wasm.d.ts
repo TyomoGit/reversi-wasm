@@ -7,16 +7,6 @@
 export function color_to_string(color: Color): string;
 /**
 */
-export enum GameStatus {
-  Ok = 0,
-  InvalidMove = 1,
-  BlackWin = 2,
-  WhiteWin = 3,
-  Draw = 4,
-  NextPlayerCantPutStone = 5,
-}
-/**
-*/
 export enum Color {
   Black = 0,
   White = 1,
@@ -24,11 +14,23 @@ export enum Color {
 }
 /**
 */
+export enum GameStatus {
+  Ok = 0,
+  OkAndComputerPlaced = 1,
+  InvalidMove = 2,
+  BlackWin = 3,
+  WhiteWin = 4,
+  Draw = 5,
+  NextPlayerCantPutStone = 6,
+}
+/**
+*/
 export class Game {
   free(): void;
 /**
+* @param {boolean} is_human
 */
-  constructor();
+  constructor(is_human: boolean);
 /**
 * @param {number} x
 * @param {number} y
@@ -55,6 +57,10 @@ export class Game {
 * @returns {boolean}
 */
   is_game_over(): boolean;
+/**
+* @returns {Color}
+*/
+  get_turn(): Color;
 }
 /**
 */
@@ -79,12 +85,13 @@ export interface InitOutput {
   readonly __wbg_set_point_0: (a: number, b: number) => void;
   readonly __wbg_get_point_1: (a: number) => number;
   readonly __wbg_set_point_1: (a: number, b: number) => void;
-  readonly game_new: () => number;
+  readonly game_new: (a: number) => number;
   readonly game_put: (a: number, b: number, c: number) => number;
   readonly game_get_board: (a: number) => number;
   readonly game_can_put_stone: (a: number, b: number, c: number) => number;
   readonly game_get_can_put_stones: (a: number, b: number) => void;
   readonly game_is_game_over: (a: number) => number;
+  readonly game_get_turn: (a: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
