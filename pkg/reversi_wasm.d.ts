@@ -1,6 +1,11 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
+* @param {Color} color
+* @returns {string}
+*/
+export function color_to_string(color: Color): string;
+/**
 */
 export enum GameStatus {
   Ok = 0,
@@ -8,6 +13,7 @@ export enum GameStatus {
   BlackWin = 2,
   WhiteWin = 3,
   Draw = 4,
+  NextPlayerCantPutStone = 5,
 }
 /**
 */
@@ -30,6 +36,8 @@ export class Game {
 */
   put(x: number, y: number): GameStatus;
 /**
+* Get the board
+* returns Vec<Vec<Color>>
 * @returns {any}
 */
   get_board(): any;
@@ -43,6 +51,10 @@ export class Game {
 * @returns {(Point)[]}
 */
   get_can_put_stones(): (Point)[];
+/**
+* @returns {boolean}
+*/
+  is_game_over(): boolean;
 }
 /**
 */
@@ -61,6 +73,7 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_game_free: (a: number) => void;
+  readonly color_to_string: (a: number, b: number) => void;
   readonly __wbg_point_free: (a: number) => void;
   readonly __wbg_get_point_0: (a: number) => number;
   readonly __wbg_set_point_0: (a: number, b: number) => void;
@@ -71,6 +84,7 @@ export interface InitOutput {
   readonly game_get_board: (a: number) => number;
   readonly game_can_put_stone: (a: number, b: number, c: number) => number;
   readonly game_get_can_put_stones: (a: number, b: number) => void;
+  readonly game_is_game_over: (a: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;

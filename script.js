@@ -38,16 +38,22 @@ function initEventListeners(canvas, ctx, game, messageField, showHintsToggle) {
                 break;
             case wasm.GameStatus.BlackWin:
                 messageField.innerHTML = "🎉🖤Black win!🎉";
-                break;
+                drawBoard(canvas, ctx, game);
+                return;
             case wasm.GameStatus.WhiteWin:
                 messageField.innerHTML = "🎉🤍White win!🎉";
-                break;
+                drawBoard(canvas, ctx, game);
+                return;
             case wasm.GameStatus.Draw:
                 messageField.innerHTML = "😮Draw.😮";
+                drawBoard(canvas, ctx, game);
                 break;
             case wasm.GameStatus.InvalidMove:
-                alert("Can't put stone here.");
                 return;
+            case wasm.GameStatus.NextPlayerCantPutStone:
+                takeTurn(messageField, game, ctx);
+                alert(`[${wasm.color_to_string(turn)}] There is no stone to put. Pass.`);
+                break;
             default:
                 // unreachable
                 return;
@@ -120,10 +126,6 @@ function takeTurn(messageField, game, ctx) {
         turn = wasm.Color.Black;
     }
     updateTurnMessage(messageField);
-    if (game.get_can_put_stones().length == 0) {
-        alert("There is no stone to put. Pass.");
-        takeTurn(messageField, game, ctx);
-    }
     drawHintsIfNeeded(game, ctx);
 }
 function updateTurnMessage(messageField) {
@@ -134,7 +136,6 @@ function updateTurnMessage(messageField) {
 function drawHintsIfNeeded(game, ctx) {
     if (showingHints) {
         game.get_can_put_stones().forEach((point) => {
-            // drawStone(point[0], point[1], turn, ctx, 0.50);
             ctx.fillStyle = "skyblue";
             ctx.beginPath();
             ctx.globalAlpha = 1.0;

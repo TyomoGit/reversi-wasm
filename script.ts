@@ -48,7 +48,7 @@ function initEventListeners(
         }
     });
 
-    canvas.addEventListener('click', (event) => {
+    canvas.addEventListener('click', (event: MouseEvent) => {
         const { x, y } = cursorCoord(event, canvas);
 
         const status = game.put(x, y);
@@ -57,16 +57,22 @@ function initEventListeners(
                 break;
             case wasm.GameStatus.BlackWin:
                 messageField.innerHTML = "🎉🖤Black win!🎉";
-                break;
+                drawBoard(canvas, ctx, game);
+                return;
             case wasm.GameStatus.WhiteWin:
                 messageField.innerHTML = "🎉🤍White win!🎉";
-                break;
+                drawBoard(canvas, ctx, game);
+                return;
             case wasm.GameStatus.Draw:
                 messageField.innerHTML = "😮Draw.😮";
+                drawBoard(canvas, ctx, game);
                 break;
             case wasm.GameStatus.InvalidMove:
-                alert("Can't put stone here.");
                 return;
+            case wasm.GameStatus.NextPlayerCantPutStone:
+                takeTurn(messageField, game, ctx);
+                alert(`[${wasm.color_to_string(turn)}] There is no stone to put. Pass.`);
+                break;
             default:
                 // unreachable
                 return;
@@ -119,7 +125,13 @@ function drawBoard(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, gam
     drawHintsIfNeeded(game, ctx);
 }
 
-function drawStone(x: number, y: number, color: wasm.Color, ctx: CanvasRenderingContext2D, opacity: number) {
+function drawStone(
+    x: number,
+    y: number,
+    color: wasm.Color,
+    ctx: CanvasRenderingContext2D,
+    opacity: number
+) {
     if (color == wasm.Color.Empty) {
         return;
     }
@@ -160,11 +172,6 @@ function takeTurn(messageField: HTMLParagraphElement, game: wasm.Game, ctx: Canv
 
     updateTurnMessage(messageField);
 
-    if (game.get_can_put_stones().length == 0) {
-        alert("There is no stone to put. Pass.");
-        takeTurn(messageField, game, ctx);
-    }
-
     drawHintsIfNeeded(game, ctx);
 }
 
@@ -177,8 +184,6 @@ function updateTurnMessage(messageField: HTMLParagraphElement) {
 function drawHintsIfNeeded(game: wasm.Game, ctx: CanvasRenderingContext2D) {
     if (showingHints) {
         game.get_can_put_stones().forEach((point: wasm.Point) => {
-            // drawStone(point[0], point[1], turn, ctx, 0.50);
-            
             ctx.fillStyle = "skyblue";
             ctx.beginPath();
             ctx.globalAlpha = 1.0;

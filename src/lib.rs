@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use reversi::{
     game::{ReversiGameError, SimpleReversiGame},
     player::PlayerKind,
@@ -30,6 +32,21 @@ pub enum Color {
     Empty = 2,
 }
 
+impl Display for Color {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Color::Black => write!(f, "Black"),
+            Color::White => write!(f, "White"),
+            Color::Empty => write!(f, "Empty"),
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub fn color_to_string(color: Color) -> String {
+    color.to_string()
+}
+
 impl serde::Serialize for Color {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -47,6 +64,7 @@ pub enum GameStatus {
     BlackWin,
     WhiteWin,
     Draw,
+    NextPlayerCantPutStone,
 }
 
 #[wasm_bindgen]
@@ -74,7 +92,7 @@ impl Game {
     }
     pub fn put(&mut self, x: usize, y: usize) -> GameStatus {
         match self.game.put_stone(x, y) {
-            Ok(_) => GameStatus::Ok,
+            Ok(()) => GameStatus::Ok,
             Err(err) => match err {
                 ReversiGameError::StoneAlreadyPlaced
                 | ReversiGameError::InvalidMove
@@ -85,10 +103,13 @@ impl Game {
                     PlayerKind::White => GameStatus::WhiteWin,
                 },
                 ReversiGameError::GameOverWithDraw => GameStatus::Draw,
+                ReversiGameError::NextPlayerCantPutStone => GameStatus::NextPlayerCantPutStone,
             },
         }
     }
 
+    /// Get the board
+    /// returns Vec<Vec<Color>>
     pub fn get_board(&self) -> JsValue {
         let result: Vec<Vec<Color>> = self
             .game
@@ -119,6 +140,12 @@ impl Game {
             .into_iter()
             .map(|reversi::point::Point { x, y }| Point(x, y))
             .collect()
+    }
+
+    pub fn is_game_over(&self) -> bool {
+        self.game
+            .board()
+            .is_game_over()
     }
 }
 

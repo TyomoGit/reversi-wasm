@@ -4,9 +4,18 @@ const heap = new Array(128).fill(undefined);
 
 heap.push(undefined, null, true, false);
 
-function getObject(idx) { return heap[idx]; }
-
 let heap_next = heap.length;
+
+function addHeapObject(obj) {
+    if (heap_next === heap.length) heap.push(heap.length + 1);
+    const idx = heap_next;
+    heap_next = heap[idx];
+
+    heap[idx] = obj;
+    return idx;
+}
+
+function getObject(idx) { return heap[idx]; }
 
 function dropObject(idx) {
     if (idx < 132) return;
@@ -18,15 +27,6 @@ function takeObject(idx) {
     const ret = getObject(idx);
     dropObject(idx);
     return ret;
-}
-
-function addHeapObject(obj) {
-    if (heap_next === heap.length) heap.push(heap.length + 1);
-    const idx = heap_next;
-    heap_next = heap[idx];
-
-    heap[idx] = obj;
-    return idx;
 }
 
 function debugString(val) {
@@ -176,6 +176,26 @@ function getStringFromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
 }
+/**
+* @param {Color} color
+* @returns {string}
+*/
+export function color_to_string(color) {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        wasm.color_to_string(retptr, color);
+        var r0 = getInt32Memory0()[retptr / 4 + 0];
+        var r1 = getInt32Memory0()[retptr / 4 + 1];
+        deferred1_0 = r0;
+        deferred1_1 = r1;
+        return getStringFromWasm0(r0, r1);
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
+}
 
 let cachedUint32Memory0 = null;
 
@@ -198,7 +218,7 @@ function getArrayJsValueFromWasm0(ptr, len) {
 }
 /**
 */
-export const GameStatus = Object.freeze({ Ok:0,"0":"Ok",InvalidMove:1,"1":"InvalidMove",BlackWin:2,"2":"BlackWin",WhiteWin:3,"3":"WhiteWin",Draw:4,"4":"Draw", });
+export const GameStatus = Object.freeze({ Ok:0,"0":"Ok",InvalidMove:1,"1":"InvalidMove",BlackWin:2,"2":"BlackWin",WhiteWin:3,"3":"WhiteWin",Draw:4,"4":"Draw",NextPlayerCantPutStone:5,"5":"NextPlayerCantPutStone", });
 /**
 */
 export const Color = Object.freeze({ Black:0,"0":"Black",White:1,"1":"White",Empty:2,"2":"Empty", });
@@ -238,6 +258,8 @@ export class Game {
         return ret;
     }
     /**
+    * Get the board
+    * returns Vec<Vec<Color>>
     * @returns {any}
     */
     get_board() {
@@ -268,6 +290,13 @@ export class Game {
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
         }
+    }
+    /**
+    * @returns {boolean}
+    */
+    is_game_over() {
+        const ret = wasm.game_is_game_over(this.__wbg_ptr);
+        return ret !== 0;
     }
 }
 
@@ -359,9 +388,6 @@ async function __wbg_load(module, imports) {
 function __wbg_get_imports() {
     const imports = {};
     imports.wbg = {};
-    imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
-        takeObject(arg0);
-    };
     imports.wbg.__wbindgen_number_new = function(arg0) {
         const ret = arg0;
         return addHeapObject(ret);
@@ -369,6 +395,9 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_point_new = function(arg0) {
         const ret = Point.__wrap(arg0);
         return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
+        takeObject(arg0);
     };
     imports.wbg.__wbg_new_16b304a2cfa7ff4a = function() {
         const ret = new Array();
