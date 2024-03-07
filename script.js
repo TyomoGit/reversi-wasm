@@ -100,6 +100,9 @@ function drawBoardGrid(canvas, ctx) {
         ctx.stroke();
     }
 }
+export function drawBoardRs(game) {
+    drawBoard(canvas, ctx, game);
+}
 function drawBoard(canvas, ctx, game) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBoardGrid(canvas, ctx);

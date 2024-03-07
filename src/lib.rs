@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+use reversi::board::ReversiBoard;
 use reversi::computer::{SimpleComputer, WeightedComputer};
 use reversi::{
     board::ReversiError, computer::PlayerType, game::SimpleReversiGame, stone::Stone
@@ -12,6 +13,7 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 extern "C" {
     fn alert(s: &str);
+    fn draw_board_rs(board: Game);
 }
 
 #[wasm_bindgen(js_namespace = console)]
@@ -120,6 +122,9 @@ impl Game {
                 },
                 ReversiError::GameOverWithDraw => GameStatus::Draw,
                 ReversiError::NextPlayerCantPutStone => GameStatus::NextPlayerCantPutStone,
+                ReversiError::ComputerTurnIsOk(board) => {
+                    todo!()
+                }
             },
         }
     }

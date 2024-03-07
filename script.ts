@@ -133,6 +133,10 @@ function drawBoardGrid(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D)
     }
 }
 
+export function drawBoardRs(game: wasm.Game) {
+    drawBoard(canvas, ctx, game);
+}
+
 function drawBoard(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, game: wasm.Game) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBoardGrid(canvas, ctx);
