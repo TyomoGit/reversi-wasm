@@ -122,9 +122,6 @@ impl Game {
                 },
                 ReversiError::GameOverWithDraw => GameStatus::Draw,
                 ReversiError::NextPlayerCantPutStone => GameStatus::NextPlayerCantPutStone,
-                ReversiError::ComputerTurnIsOk(board) => {
-                    todo!()
-                }
             },
         }
     }
