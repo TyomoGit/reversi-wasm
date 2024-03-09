@@ -237,13 +237,13 @@ function handleError(f, args) {
 }
 /**
 */
-export const GameStatus = Object.freeze({ Ok:0,"0":"Ok",OkAndComputerPlaced:1,"1":"OkAndComputerPlaced",InvalidMove:2,"2":"InvalidMove",BlackWin:3,"3":"BlackWin",WhiteWin:4,"4":"WhiteWin",Draw:5,"5":"Draw",NextPlayerCantPutStone:6,"6":"NextPlayerCantPutStone", });
-/**
-*/
 export const ComputerStrength = Object.freeze({ Random:0,"0":"Random",Simple:1,"1":"Simple",Weighted:2,"2":"Weighted", });
 /**
 */
 export const Color = Object.freeze({ Black:0,"0":"Black",White:1,"1":"White",Empty:2,"2":"Empty", });
+/**
+*/
+export const GameStatus = Object.freeze({ Ok:0,"0":"Ok",InvalidMove:1,"1":"InvalidMove",BlackWin:2,"2":"BlackWin",WhiteWin:3,"3":"WhiteWin",Draw:4,"4":"Draw",BlackCantPutStone:5,"5":"BlackCantPutStone",WhiteCantPutStone:6,"6":"WhiteCantPutStone", });
 
 const GameFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
@@ -271,6 +271,13 @@ export class Game {
         const ret = wasm.game_new(is_human, computer_strength);
         this.__wbg_ptr = ret >>> 0;
         return this;
+    }
+    /**
+    * @returns {Point | undefined}
+    */
+    decide() {
+        const ret = wasm.game_decide(this.__wbg_ptr);
+        return ret === 0 ? undefined : Point.__wrap(ret);
     }
     /**
     * @param {number} x
@@ -360,28 +367,37 @@ export class Point {
     /**
     * @returns {number}
     */
-    get 0() {
-        const ret = wasm.__wbg_get_point_0(this.__wbg_ptr);
+    get x() {
+        const ret = wasm.__wbg_get_point_x(this.__wbg_ptr);
         return ret >>> 0;
     }
     /**
     * @param {number} arg0
     */
-    set 0(arg0) {
-        wasm.__wbg_set_point_0(this.__wbg_ptr, arg0);
+    set x(arg0) {
+        wasm.__wbg_set_point_x(this.__wbg_ptr, arg0);
     }
     /**
     * @returns {number}
     */
-    get 1() {
-        const ret = wasm.__wbg_get_point_1(this.__wbg_ptr);
+    get y() {
+        const ret = wasm.__wbg_get_point_y(this.__wbg_ptr);
         return ret >>> 0;
     }
     /**
     * @param {number} arg0
     */
-    set 1(arg0) {
-        wasm.__wbg_set_point_1(this.__wbg_ptr, arg0);
+    set y(arg0) {
+        wasm.__wbg_set_point_y(this.__wbg_ptr, arg0);
+    }
+    /**
+    * @param {number} x
+    * @param {number} y
+    */
+    constructor(x, y) {
+        const ret = wasm.point_new(x, y);
+        this.__wbg_ptr = ret >>> 0;
+        return this;
     }
 }
 

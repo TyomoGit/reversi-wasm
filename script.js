@@ -12,6 +12,7 @@ const enemySelect = document.getElementById("enemySelect");
 let turn;
 let showingHints;
 let game;
+let userCanPut = true;
 // end global variables
 init()
     .then(entry);
@@ -25,7 +26,6 @@ function entry() {
 }
 function reset() {
     const isHuman = enemySelect.value == "human";
-    console.log(isHuman);
     game = new wasm.Game(isHuman, wasm.str_to_computer_strength(enemySelect.value));
     turn = game.get_turn();
     showingHints = showHintsToggle.checked;
@@ -38,39 +38,30 @@ function initEventListeners(canvas, ctx, messageField, showHintsToggle, enemySel
             drawStone(x, y, turn, ctx, 0.5);
         }
     });
-    canvas.addEventListener('click', (event) => {
-        const { x, y } = cursorCoord(event, canvas);
-        const status = game.put(x, y);
-        switch (status) {
-            case wasm.GameStatus.Ok:
-                break;
-            case wasm.GameStatus.OkAndComputerPlaced:
-                takeTurn(messageField, ctx);
-                break;
-            case wasm.GameStatus.BlackWin:
-                messageField.innerHTML = "🎉🖤Black win!🎉";
-                drawBoard(canvas, ctx, game);
-                return;
-            case wasm.GameStatus.WhiteWin:
-                messageField.innerHTML = "🎉🤍White win!🎉";
-                drawBoard(canvas, ctx, game);
-                return;
-            case wasm.GameStatus.Draw:
-                messageField.innerHTML = "😮Draw.😮";
-                drawBoard(canvas, ctx, game);
-                break;
-            case wasm.GameStatus.InvalidMove:
-                return;
-            case wasm.GameStatus.NextPlayerCantPutStone:
-                alert(`[${wasm.color_to_string(turn)}] There is no stone to put. Pass.`);
-                takeTurn(messageField, ctx);
-                break;
-            default:
-                // unreachable
-                return;
+    canvas.addEventListener('click', async (event) => {
+        if (!userCanPut) {
+            console.log("computer is thinking...");
+            return;
         }
-        drawBoard(canvas, ctx, game);
-        takeTurn(messageField, ctx);
+        const timeout = (ms) => new Promise(handler => setTimeout(handler, ms));
+        const { x, y } = cursorCoord(event, canvas);
+        const computerCanPut = put(new wasm.Point(x, y));
+        if (!computerCanPut) {
+            console.log("can't put stone");
+            return;
+        }
+        userCanPut = false;
+        const position_result_opt = game.decide();
+        if (position_result_opt) {
+            while (game.get_turn() == wasm.Color.White) {
+                await timeout(500);
+                const _ = put(position_result_opt);
+            }
+        }
+        else {
+            console.log("error");
+        }
+        userCanPut = true;
     });
     showHintsToggle.addEventListener('change', (_) => {
         showingHints = showHintsToggle.checked;
@@ -82,6 +73,45 @@ function initEventListeners(canvas, ctx, messageField, showHintsToggle, enemySel
         drawBoard(canvas, ctx, game);
         console.log(`enemy: ${enemySelect.value}`);
     });
+}
+function put(position) {
+    if (!game.can_put_stone(position.x, position.y)) {
+        return false;
+    }
+    const status = game.put(position.x, position.y);
+    switch (status) {
+        case wasm.GameStatus.Ok:
+            break;
+        case wasm.GameStatus.BlackWin:
+            messageField.innerHTML = "🎉🖤Black win!🎉";
+            drawBoard(canvas, ctx, game);
+            return false;
+        case wasm.GameStatus.WhiteWin:
+            messageField.innerHTML = "🎉🤍White win!🎉";
+            drawBoard(canvas, ctx, game);
+            return false;
+        case wasm.GameStatus.Draw:
+            messageField.innerHTML = "😮Draw.😮";
+            drawBoard(canvas, ctx, game);
+            return false;
+        case wasm.GameStatus.InvalidMove:
+            return false;
+        case wasm.GameStatus.BlackCantPutStone:
+            alert(`[Black] There is no stone to put. Pass.`);
+            update_turn(messageField, ctx);
+            break;
+        case wasm.GameStatus.WhiteCantPutStone:
+            alert(`[White] There is no stone to put. Pass.`);
+            drawBoard(canvas, ctx, game);
+            update_turn(messageField, ctx);
+            return false;
+        default:
+            // unreachable
+            return false;
+    }
+    drawBoard(canvas, ctx, game);
+    update_turn(messageField, ctx);
+    return true;
 }
 function drawBoardGrid(canvas, ctx) {
     ctx.fillStyle = '#41902a';
@@ -137,7 +167,7 @@ function cursorCoord(event, canvas) {
         y: Math.round((y - GRID_SIZE) / GRID_SIZE)
     };
 }
-function takeTurn(messageField, ctx) {
+function update_turn(messageField, ctx) {
     turn = game.get_turn();
     updateTurnMessage(messageField);
     drawHintsIfNeeded(ctx);
@@ -154,7 +184,7 @@ function drawHintsIfNeeded(ctx) {
             ctx.beginPath();
             ctx.globalAlpha = 1.0;
             const stonePadding = 15;
-            ctx.arc(point[0] * GRID_SIZE + OFFSET / PADDING_SCALE, point[1] * GRID_SIZE + OFFSET / PADDING_SCALE, OFFSET - stonePadding, 0, 2 * Math.PI);
+            ctx.arc(point.x * GRID_SIZE + OFFSET / PADDING_SCALE, point.y * GRID_SIZE + OFFSET / PADDING_SCALE, OFFSET - stonePadding, 0, 2 * Math.PI);
             ctx.fill();
             ctx.globalAlpha = 1.0;
         });

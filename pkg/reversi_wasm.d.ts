@@ -12,17 +12,6 @@ export function color_to_string(color: Color): string;
 export function str_to_computer_strength(s: string): ComputerStrength;
 /**
 */
-export enum GameStatus {
-  Ok = 0,
-  OkAndComputerPlaced = 1,
-  InvalidMove = 2,
-  BlackWin = 3,
-  WhiteWin = 4,
-  Draw = 5,
-  NextPlayerCantPutStone = 6,
-}
-/**
-*/
 export enum ComputerStrength {
   Random = 0,
   Simple = 1,
@@ -37,6 +26,17 @@ export enum Color {
 }
 /**
 */
+export enum GameStatus {
+  Ok = 0,
+  InvalidMove = 1,
+  BlackWin = 2,
+  WhiteWin = 3,
+  Draw = 4,
+  BlackCantPutStone = 5,
+  WhiteCantPutStone = 6,
+}
+/**
+*/
 export class Game {
   free(): void;
 /**
@@ -44,6 +44,10 @@ export class Game {
 * @param {ComputerStrength} computer_strength
 */
   constructor(is_human: boolean, computer_strength: ComputerStrength);
+/**
+* @returns {Point | undefined}
+*/
+  decide(): Point | undefined;
 /**
 * @param {number} x
 * @param {number} y
@@ -80,26 +84,33 @@ export class Game {
 export class Point {
   free(): void;
 /**
+* @param {number} x
+* @param {number} y
 */
-  0: number;
+  constructor(x: number, y: number);
 /**
 */
-  1: number;
+  x: number;
+/**
+*/
+  y: number;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly __wbg_game_free: (a: number) => void;
   readonly color_to_string: (a: number, b: number) => void;
   readonly str_to_computer_strength: (a: number, b: number) => number;
   readonly __wbg_point_free: (a: number) => void;
-  readonly __wbg_get_point_0: (a: number) => number;
-  readonly __wbg_set_point_0: (a: number, b: number) => void;
-  readonly __wbg_get_point_1: (a: number) => number;
-  readonly __wbg_set_point_1: (a: number, b: number) => void;
+  readonly __wbg_get_point_x: (a: number) => number;
+  readonly __wbg_set_point_x: (a: number, b: number) => void;
+  readonly __wbg_get_point_y: (a: number) => number;
+  readonly __wbg_set_point_y: (a: number, b: number) => void;
+  readonly point_new: (a: number, b: number) => number;
+  readonly __wbg_game_free: (a: number) => void;
   readonly game_new: (a: number, b: number) => number;
+  readonly game_decide: (a: number) => number;
   readonly game_put: (a: number, b: number, c: number) => number;
   readonly game_get_board: (a: number) => number;
   readonly game_can_put_stone: (a: number, b: number, c: number) => number;

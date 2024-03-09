@@ -1,9 +1,10 @@
 use std::fmt::Display;
 
-use reversi::board::ReversiBoard;
 use reversi::computer::{Computer, RandomComputer, SimpleComputer, WeightedComputer};
+use reversi::error::ReversiError;
+use reversi::game::PlayerManager;
 use reversi::{
-    board::ReversiError, computer::PlayerType, game::SimpleReversiGame, stone::Stone
+    computer::PlayerType, game::SimpleReversiGame, stone::Stone
 };
 use serde::Serialize;
 use serde::ser::SerializeTuple;
@@ -19,11 +20,6 @@ extern "C" {
 #[wasm_bindgen(js_namespace = console)]
 extern "C" {
     fn log(s: &str);
-}
-
-#[wasm_bindgen]
-pub struct Game {
-    game: SimpleReversiGame,
 }
 
 #[wasm_bindgen]
@@ -62,12 +58,38 @@ impl serde::Serialize for Color {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GameStatus {
     Ok,
-    OkAndComputerPlaced,
     InvalidMove,
     BlackWin,
     WhiteWin,
     Draw,
-    NextPlayerCantPutStone,
+    BlackCantPutStone,
+    WhiteCantPutStone,
+}
+
+impl From<Result<(),ReversiError>> for GameStatus {
+    fn from(value: Result<(),ReversiError>) -> Self {
+        match value {
+            Ok(()) => GameStatus::Ok,
+            Err(err) => match err {
+                ReversiError::StoneAlreadyPlaced
+                | ReversiError::InvalidMove
+                | ReversiError::IndexOutOfBound
+                | ReversiError::NoStoneToFlip => GameStatus::InvalidMove,
+                ReversiError::GameOverWithWinner(winner) => match winner {
+                    Stone::Black => GameStatus::BlackWin,
+                    Stone::White => GameStatus::WhiteWin,
+                },
+                ReversiError::GameOverWithDraw => GameStatus::Draw,
+                ReversiError::NextPlayerCantPutStone(stone) => {
+                    if stone == Stone::Black {
+                        GameStatus::BlackCantPutStone
+                    } else {
+                        GameStatus::WhiteCantPutStone
+                    }
+                }
+            },
+        }
+    }
 }
 
 #[wasm_bindgen]
@@ -88,18 +110,41 @@ pub fn str_to_computer_strength(s: &str) -> ComputerStrength {
 }
 
 #[wasm_bindgen]
-pub struct Point(pub usize, pub usize);
+pub struct Point {
+    pub x: usize,
+    pub y: usize,
+}
+
+#[wasm_bindgen]
+impl Point {
+    #[wasm_bindgen(constructor)]
+    pub fn new(x: usize, y: usize) -> Point {
+        Point { x, y }
+    }
+}
+
+impl From<reversi::point::Point> for Point {
+    fn from(value: reversi::point::Point) -> Self {
+        Self { x: value.x, y: value.y }
+    }
+}
 
 impl Serialize for Point {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: serde::Serializer {
         let mut tuple = serializer.serialize_tuple(2)?;
-        tuple.serialize_element(&self.0)?;
-        tuple.serialize_element(&self.1)?;
+        tuple.serialize_element(&self.x)?;
+        tuple.serialize_element(&self.y)?;
         tuple.end()
         
     }
+}
+
+#[wasm_bindgen]
+pub struct Game {
+    game: SimpleReversiGame,
+    player_mgr: PlayerManager,
 }
 
 #[wasm_bindgen]
@@ -119,32 +164,17 @@ impl Game {
         };
 
         Game {
-            game: SimpleReversiGame::new(PlayerType::Human, white),
+            game: SimpleReversiGame::new(),
+            player_mgr: PlayerManager::new(PlayerType::Human, white),
         }
     }
 
+    pub fn decide(&self) -> Option<Point> {
+        self.player_mgr.decide(self.game.board(), self.game.turn()).map(|p| p.into())
+    }
+
     pub fn put(&mut self, x: usize, y: usize) -> GameStatus {
-        match self.game.put_stone(x, y) {
-            Ok(()) => {
-                if let PlayerType::Computer(_) = self.game.white() {
-                    GameStatus::OkAndComputerPlaced
-                } else {
-                    GameStatus::Ok
-                }
-            },
-            Err(err) => match err {
-                ReversiError::StoneAlreadyPlaced
-                | ReversiError::InvalidMove
-                | ReversiError::IndexOutOfBound
-                | ReversiError::NoStoneToFlip => GameStatus::InvalidMove,
-                ReversiError::GameOverWithWinner(winner) => match winner {
-                    Stone::Black => GameStatus::BlackWin,
-                    Stone::White => GameStatus::WhiteWin,
-                },
-                ReversiError::GameOverWithDraw => GameStatus::Draw,
-                ReversiError::NextPlayerCantPutStone => GameStatus::NextPlayerCantPutStone,
-            },
-        }
+        self.game.put_stone(x, y).into()
     }
 
     /// Get the board
@@ -177,7 +207,7 @@ impl Game {
         self.game
             .get_can_put_stones()
             .into_iter()
-            .map(|reversi::point::Point { x, y }| Point(x, y))
+            .map(|reversi::point::Point { x, y }| Point { x, y })
             .collect()
     }
 
