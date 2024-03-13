@@ -237,13 +237,13 @@ function handleError(f, args) {
 }
 /**
 */
-export const GameStatus = Object.freeze({ Ok:0,"0":"Ok",InvalidMove:1,"1":"InvalidMove",BlackWin:2,"2":"BlackWin",WhiteWin:3,"3":"WhiteWin",Draw:4,"4":"Draw",BlackCantPutStone:5,"5":"BlackCantPutStone",WhiteCantPutStone:6,"6":"WhiteCantPutStone", });
+export const Color = Object.freeze({ Black:0,"0":"Black",White:1,"1":"White",Empty:2,"2":"Empty", });
 /**
 */
 export const ComputerStrength = Object.freeze({ Random:0,"0":"Random",Simple:1,"1":"Simple",Weighted:2,"2":"Weighted", });
 /**
 */
-export const Color = Object.freeze({ Black:0,"0":"Black",White:1,"1":"White",Empty:2,"2":"Empty", });
+export const GameStatus = Object.freeze({ Ok:0,"0":"Ok",InvalidMove:1,"1":"InvalidMove",BlackWin:2,"2":"BlackWin",WhiteWin:3,"3":"WhiteWin",Draw:4,"4":"Draw",BlackCantPutStone:5,"5":"BlackCantPutStone",WhiteCantPutStone:6,"6":"WhiteCantPutStone", });
 
 const GameFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }

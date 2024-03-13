@@ -51,15 +51,13 @@ function initEventListeners(canvas, ctx, messageField, showHintsToggle, enemySel
             return;
         }
         userCanPut = false;
-        const position_result_opt = game.decide();
-        if (position_result_opt) {
-            while (game.get_turn() == wasm.Color.White) {
+        while (game.get_turn() == wasm.Color.White) {
+            let position_result_opt = game.decide();
+            if (position_result_opt) {
                 await timeout(500);
+                console.log("computer placed in succession");
                 const _ = put(position_result_opt);
             }
-        }
-        else {
-            console.log("error");
         }
         userCanPut = true;
     });
@@ -98,7 +96,6 @@ function put(position) {
             return false;
         case wasm.GameStatus.BlackCantPutStone:
             alert(`[Black] There is no stone to put. Pass.`);
-            update_turn(messageField, ctx);
             break;
         case wasm.GameStatus.WhiteCantPutStone:
             alert(`[White] There is no stone to put. Pass.`);
