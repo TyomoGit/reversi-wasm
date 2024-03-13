@@ -12,6 +12,17 @@ export function color_to_string(color: Color): string;
 export function str_to_computer_strength(s: string): ComputerStrength;
 /**
 */
+export enum GameStatus {
+  Ok = 0,
+  InvalidMove = 1,
+  BlackWin = 2,
+  WhiteWin = 3,
+  Draw = 4,
+  BlackCantPutStone = 5,
+  WhiteCantPutStone = 6,
+}
+/**
+*/
 export enum ComputerStrength {
   Random = 0,
   Simple = 1,
@@ -23,17 +34,6 @@ export enum Color {
   Black = 0,
   White = 1,
   Empty = 2,
-}
-/**
-*/
-export enum GameStatus {
-  Ok = 0,
-  InvalidMove = 1,
-  BlackWin = 2,
-  WhiteWin = 3,
-  Draw = 4,
-  BlackCantPutStone = 5,
-  WhiteCantPutStone = 6,
 }
 /**
 */

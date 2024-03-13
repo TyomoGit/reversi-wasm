@@ -115,11 +115,11 @@ function put(position: wasm.Point): boolean {
             case wasm.GameStatus.Ok:
                 break;
             case wasm.GameStatus.BlackWin:
-                messageField.innerHTML = "🎉🖤Black win!🎉";
+                messageField.innerHTML = "🎉🖤Black wins!🎉";
                 drawBoard(canvas, ctx, game);
                 return false;
             case wasm.GameStatus.WhiteWin:
-                messageField.innerHTML = "🎉🤍White win!🎉";
+                messageField.innerHTML = "🎉🤍White wins!🎉";
                 drawBoard(canvas, ctx, game);
                 return false;
             case wasm.GameStatus.Draw:
